@@ -8,17 +8,6 @@ import (
 	"strconv"
 )
 
-type function struct {
-	path         string
-	line         uint64
-	packageName  string
-	functionName string
-}
-
-func (fn *function) String() string {
-	return fmt.Sprintf("%s.%s", fn.packageName, fn.functionName)
-}
-
 func main() {
 
 	if len(os.Args) < 2 {
@@ -30,6 +19,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	st := parseStacktrace(b)
+
+	st.ToDot()
+}
+
+func parseStacktrace(b []byte) stacktrace {
+	var err error
 
 	goroutineRegex := regexp.MustCompile("^goroutine ([0-9]+).*:$")
 	functionRegex := regexp.MustCompile(`(.*)\.(.*)\(.*\)`)
@@ -64,14 +61,7 @@ func main() {
 			st.appendFunction(*fn)
 			continue
 		}
-		/* ignore everything else for now
-		fmt.Printf("-> %s %d\n", line, len(match))
-		for _, m := range match {
-			fmt.Printf("\t%s\n", m)
-		}
-		*/
 
 	}
-
-	st.ToDot()
+	return st
 }
