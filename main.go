@@ -4,25 +4,33 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 )
 
 func main() {
-
 	if len(os.Args) < 2 {
-		fmt.Printf("usage: %s <filename>\n", os.Args[0])
-	}
-	filename := os.Args[1]
-
-	b, err := os.ReadFile(filename)
-	if err != nil {
-		panic(err)
+		fmt.Printf("usage: %s [filename]\n", os.Args[0])
 	}
 
-	st := parseStacktrace(b)
+	fmt.Printf("%s", dotPreamble("graph"))
 
-	st.ToDot()
+	for _, filename := range os.Args[1:] {
+
+		b, err := os.ReadFile(filename)
+		if err != nil {
+			panic(err)
+		}
+
+		st := parseStacktrace(b)
+		st.name = filepath.Base(filename)
+
+		//		st.ToDot()
+		fmt.Printf("%s", st.dotRelations())
+	}
+
+	fmt.Printf("%s", dotClosing())
 }
 
 func parseStacktrace(b []byte) stacktrace {
@@ -61,7 +69,6 @@ func parseStacktrace(b []byte) stacktrace {
 			st.appendFunction(*fn)
 			continue
 		}
-
 	}
 	return st
 }

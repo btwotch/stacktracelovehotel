@@ -26,16 +26,36 @@ func (st *stacktrace) String() string {
 }
 
 func (st *stacktrace) ToDot() {
-	fmt.Printf("digraph \"%s\"\n", st.Name())
-	fmt.Printf("{\n")
+	preamble := dotPreamble(st.Name())
 
+	fmt.Printf("%s", preamble)
+
+	relations := st.dotRelations()
+
+	fmt.Printf("%s", relations)
+
+	closing := dotClosing()
+	fmt.Printf("%s", closing)
+}
+
+func dotClosing() string {
+	closing := fmt.Sprintf("}\n")
+	return closing
+}
+
+func dotPreamble(title string) string {
+	var preamble string
+	preamble = fmt.Sprintf("digraph \"%s\"\n", title)
+	preamble += fmt.Sprintf("{\n")
+	return preamble
+}
+
+func (st *stacktrace) dotRelations() string {
 	var relations string
 	for i := 1; i < len(st.fs); i++ {
 		relations += fmt.Sprintf("\"%s\" -> \"%s\";\n", st.fs[i].String(), st.fs[i-1].String())
 	}
-
-	fmt.Printf("%s", relations)
-	fmt.Printf("}\n")
+	return relations
 }
 
 func (st *stacktrace) appendFunction(fn function) {
