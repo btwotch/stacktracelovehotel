@@ -12,3 +12,7 @@ type function struct {
 func (fn *function) String() string {
 	return fmt.Sprintf("%s.%s", fn.packageName, fn.functionName)
 }
+
+func (fn *function) Empty() bool {
+	return fn.functionName == ""
+}
