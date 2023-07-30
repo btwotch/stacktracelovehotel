@@ -5,6 +5,8 @@ st: *.go
 	goimports -w .
 	go build -o st
 
-stacktrace.png: st stacktrace.txt
-	./st stacktrace.txt stacktrace2.txt > stacktrace.dot
+stacktrace.dot: st
+	./st st_*.txt > stacktrace.dot
+
+stacktrace.png: st stacktrace.dot
 	dot -Tpng -o stacktrace.png stacktrace.dot
