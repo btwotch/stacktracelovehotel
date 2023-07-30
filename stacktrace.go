@@ -53,7 +53,11 @@ func dotPreamble(title string) string {
 func (st *stacktrace) dotRelations() string {
 	var relations string
 	for i := 1; i < len(st.fs); i++ {
-		relations += fmt.Sprintf("\"%s\" -> \"%s\";\n", st.fs[i].String(), st.fs[i-1].String())
+		from := st.fs[i].String()
+		to := st.fs[i-1].String()
+		from = strings.TrimSpace(from)
+		to = strings.TrimSpace(to)
+		relations += fmt.Sprintf("\t\"%s\" -> \"%s\";\n", from, to)
 	}
 	return relations
 }
