@@ -8,35 +8,6 @@ import (
 	"strings"
 )
 
-type stacktraces struct {
-	sts []stacktrace
-}
-
-func (sts *stacktraces) String() string {
-	str := dotPreamble("Stacktraces")
-
-	for _, st := range sts.sts {
-		str += st.dotRelations()
-		str += "\n"
-	}
-
-	str += dotClosing()
-
-	return str
-}
-
-func (sts *stacktraces) Render(path string) {
-	dot := sts.String()
-	renderDot(dot, path)
-}
-
-func (sts *stacktraces) addFromString(name string, b []byte) {
-	st := parseStacktrace(b)
-	st.name = name
-
-	sts.sts = append(sts.sts, st)
-}
-
 type stacktrace struct {
 	name      string
 	goroutine uint64
@@ -85,16 +56,54 @@ func dotPreamble(title string) string {
 	return preamble
 }
 
-func (st *stacktrace) dotRelations() string {
-	var relations string
+type relation struct {
+	from string
+	to   string
+}
+
+type relations struct {
+	rs map[relation]struct{}
+}
+
+func newRelations() relations {
+	var rs relations
+
+	rs.rs = make(map[relation]struct{})
+
+	return rs
+}
+func (rs relations) String() string {
+	var ret string
+	for relation := range rs.rs {
+		from := relation.from
+		to := relation.to
+		ret += fmt.Sprintf("\t\"%s\" -> \"%s\";\n", from, to)
+	}
+
+	return ret
+}
+
+func (rs *relations) ingest(other relations) {
+	for relation := range other.rs {
+		rs.rs[relation] = struct{}{}
+	}
+}
+
+func (st *stacktrace) dotRelations() relations {
+	rs := newRelations()
 	for i := 1; i < len(st.fs); i++ {
 		from := st.fs[i].String()
 		to := st.fs[i-1].String()
 		from = strings.TrimSpace(from)
 		to = strings.TrimSpace(to)
-		relations += fmt.Sprintf("\t\"%s\" -> \"%s\";\n", from, to)
+
+		rl := relation{
+			from: from,
+			to:   to,
+		}
+		rs.rs[rl] = struct{}{}
 	}
-	return relations
+	return rs
 }
 
 func (st *stacktrace) appendFunction(fn function) {
