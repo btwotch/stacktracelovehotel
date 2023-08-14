@@ -25,6 +25,11 @@ func (sts *stacktraces) String() string {
 	return str
 }
 
+func (sts *stacktraces) Render(path string) {
+	dot := sts.String()
+	renderDot(dot, path)
+}
+
 func (sts *stacktraces) addFromString(name string, b []byte) {
 	st := parseStacktrace(b)
 	st.name = name

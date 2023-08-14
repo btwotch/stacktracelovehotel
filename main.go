@@ -25,5 +25,5 @@ func main() {
 
 	}
 
-	fmt.Printf("%s\n", sts.String())
+	sts.Render("stacktrace.png")
 }
